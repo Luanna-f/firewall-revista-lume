@@ -1,0 +1,77 @@
+# Revista Lume - Ambiente simulado de firewall (LAN + DMZ)
+# Passo 4: redes e containers. As regras do firewall entram no Passo 5.
+
+services:
+
+  # Gateway/roteador entre a LAN e a DMZ
+  firewall:
+    build: ./firewall
+    container_name: firewall
+    cap_add:
+      - NET_ADMIN              # permite manipular iptables dentro do container
+    sysctls:
+      - net.ipv4.ip_forward=1  # habilita o encaminhamento de pacotes (roteador)
+    networks:
+      lan:
+        ipv4_address: 172.16.0.254
+      dmz:
+        ipv4_address: 172.20.0.254
+
+  # Estacao de trabalho da redacao (rede interna)
+  cliente:
+    build: ./cliente
+    container_name: cliente
+    cap_add:
+      - NET_ADMIN              # necessario para criar a rota ate a DMZ
+    # Rota: para chegar na DMZ, o proximo salto (next hop) e o firewall
+    command: sh -c "ip route add 172.20.0.0/24 via 172.16.0.254 && tail -f /dev/null"
+    depends_on:
+      - firewall
+    networks:
+      lan:
+        ipv4_address: 172.16.0.10
+
+  # Portal da revista (servico web na DMZ)
+  dmz-web:
+    image: nginx:alpine
+    container_name: dmz-web
+    cap_add:
+      - NET_ADMIN
+    volumes:
+      - ./dmz/web:/usr/share/nginx/html:ro
+    # Rota de volta para a LAN passando pelo firewall
+    command: sh -c "ip route add 172.16.0.0/24 via 172.20.0.254 && exec nginx -g 'daemon off;'"
+    depends_on:
+      - firewall
+    networks:
+      dmz:
+        ipv4_address: 172.20.0.10
+
+  # Banco de dados de assinantes (isolado na DMZ)
+  dmz-db:
+    image: postgres:16-alpine
+    container_name: dmz-db
+    cap_add:
+      - NET_ADMIN
+    environment:
+      POSTGRES_USER: lume
+      POSTGRES_PASSWORD: lume_lab_2026   # senha ficticia, apenas para o laboratorio
+      POSTGRES_DB: assinantes
+    entrypoint: ["sh", "-c", "ip route add 172.16.0.0/24 via 172.20.0.254 && exec docker-entrypoint.sh postgres"]
+    depends_on:
+      - firewall
+    networks:
+      dmz:
+        ipv4_address: 172.20.0.20
+
+networks:
+  lan:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.16.0.0/24
+  dmz:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/24
