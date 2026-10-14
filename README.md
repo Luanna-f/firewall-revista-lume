@@ -40,7 +40,7 @@ docker logs firewall
 
 ```
 # Positivo: a LAN acessa o portal (deve mostrar o HTML da página LUME)
-docker exec cliente curl -s http://172.20.0.10
+docker exec cliente curl -s http://dmz-web
 
 # Negativo: a LAN não alcança o banco (5432 deve aparecer "filtered")
 docker exec cliente nmap -Pn -p 80,5432 172.20.0.10 172.20.0.20
@@ -62,5 +62,6 @@ docker compose down
 
 ## Observações
 
+- O container `cliente` resolve os nomes `dmz-web` e `dmz-db` por `extra_hosts` (as redes são separadas, então o DNS do Docker não resolve entre elas).
 - No Windows, os scripts `.sh` precisam de quebra de linha do Linux (LF). O arquivo `.gitattributes` garante isso e o `Dockerfile` do firewall ainda converte por segurança.
 - Se o Docker acusar `Pool overlaps`, outra rede do Docker já usa a faixa 172.16.0.0/24 ou 172.20.0.0/24: remova-a (`docker network ls` e `docker network rm`) ou altere as faixas no `docker-compose.yml`.

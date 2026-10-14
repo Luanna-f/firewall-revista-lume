@@ -143,12 +143,20 @@ Observação: o comando `docker logs` acumula a saída de todas as execuções d
 **Teste P1: a estação da redação acessa o portal.**
 
 ```
+docker exec cliente curl -s http://dmz-web
+```
+
+Esperado: o HTML da página "LUME". O nome `dmz-web` é resolvido por `extra_hosts` no container `cliente` (aponta para 172.20.0.10), pois as duas redes são separadas e o DNS do Docker não resolve nomes entre elas.
+
+![Teste P1 (por nome)](evidencias/09-depois-curl-dmz-web-por-nome.png)
+
+O mesmo acesso, feito pelo IP:
+
+```
 docker exec cliente curl -s http://172.20.0.10
 ```
 
-Esperado: o HTML da página "LUME".
-
-![Teste P1](evidencias/05-depois-curl-web.png)
+![Teste P1 (por IP)](evidencias/05-depois-curl-web.png)
 
 **Teste P2: a porta 80 do portal está acessível.**
 
@@ -173,6 +181,28 @@ docker exec dmz-web ping -c 2 -W 2 172.16.0.10
 Esperado: `100% packet loss`.
 
 ![Teste N2](evidencias/07-depois-ping-dmz-lan.png)
+
+**Teste N3: isolamento de redes (o cliente só chega à DMZ passando pelo firewall).**
+
+O teste remove da estação a rota que leva à DMZ pelo firewall e verifica que o portal deixa de ser alcançável:
+
+```
+docker exec cliente ip route
+docker exec cliente ip route del 172.20.0.0/24
+docker exec cliente curl -s -m 3 http://dmz-web
+docker exec cliente ip route add 172.20.0.0/24 via 172.16.0.254
+docker exec cliente curl -s http://dmz-web
+```
+
+Esperado:
+
+1. `ip route` mostra a rota `172.20.0.0/24 via 172.16.0.254` (o *next hop* é o firewall).
+2. Sem essa rota, o `curl` não obtém resposta (nenhum conteúdo é exibido).
+3. Com a rota restaurada, a página LUME volta a ser exibida.
+
+![Teste N3](evidencias/10-isolamento-sem-rota-via-firewall.png)
+
+Isso mostra que a estação não tem outro caminho para a DMZ: as redes `lan` e `dmz` são `bridge` separadas e a única ligação entre elas é o firewall.
 
 ### 4.4 Evidência pelos contadores do firewall
 
@@ -228,7 +258,7 @@ docker compose restart firewall
 
 ```
 .
-|-- docker-compose.yml      # redes lan/dmz, containers e NET_ADMIN
+|-- docker-compose.yml      # redes lan/dmz, containers, NET_ADMIN e extra_hosts
 |-- firewall/
 |   |-- Dockerfile          # Ubuntu 24.04 + iptables
 |   `-- entrypoint.sh       # carrega as regras na subida
