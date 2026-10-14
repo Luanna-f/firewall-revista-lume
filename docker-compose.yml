@@ -21,6 +21,9 @@ services:
   cliente:
     build: ./cliente
     container_name: cliente
+    extra_hosts:
+      - "dmz-web:172.20.0.10"
+      - "dmz-db:172.20.0.20"
     cap_add:
       - NET_ADMIN              # necessario para criar a rota ate a DMZ
     # Rota: para chegar na DMZ, o proximo salto (next hop) e o firewall
