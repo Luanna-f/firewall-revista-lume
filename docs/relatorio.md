@@ -5,7 +5,7 @@
 **Curso:** Bacharelado em Sistemas de Informação
 **Disciplina:** Segurança da Informação
 **Docente:** Prof. Roitier Campos Gonçalves
-**Aluna:** Luanna Fernandes
+**Aluna:** Luanna Fernandes da Silva 
 **Data:** 14/10/2026 (entrega: 15/10/2026)
 **Repositório:** https://github.com/Luanna-f/firewall-revista-lume
 
