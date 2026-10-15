@@ -6,7 +6,6 @@
 **Disciplina:** Segurança da Informação
 **Docente:** Prof. Roitier Campos Gonçalves
 **Aluna:** Luanna Fernandes da Silva 
-**Data:** 14/10/2026 (entrega: 15/10/2026)
 **Repositório:** https://github.com/Luanna-f/firewall-revista-lume
 
 ---
@@ -284,7 +283,7 @@ docker compose restart firewall
 
 Material da disciplina de Segurança da Informação, Prof. Roitier Campos Gonçalves:
 
-- Aula 02: Introdução aos Conceitos de Roteamento (rotas, next hop, TTL, encaminhamento de pacotes).
-- Aula 08: Firewall (stateless vs. stateful, Netfilter, regras, estados, chains, tabelas, iptables).
+ Introdução aos Conceitos de Roteamento (rotas, next hop, TTL, encaminhamento de pacotes).
+ Firewall (stateless vs. stateful, Netfilter, regras, estados, chains, tabelas, iptables).
 - Apostila: Firewall Linux, Arquitetura Netfilter & Iptables (política Default DROP, DROP vs. REJECT, DMZ, NAT, script corporativo e laboratórios em Docker).
 - Slides: Firewall - Iptables, exemplos (comandos básicos e filtragem stateful).
